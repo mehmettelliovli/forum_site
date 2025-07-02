@@ -3,8 +3,9 @@ from config import Config
 from extensions import db, bcrypt, login_manager
 from flask_login import login_user, logout_user, login_required, current_user
 import os
-from models import User, Post, Category, Comment, create_default_categories
-from datetime import datetime
+from models import User, Post, Category, Comment, create_default_categories, Like
+from datetime import datetime, timedelta
+from sqlalchemy import func
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), '../frontend/templates'), static_folder=os.path.join(os.path.dirname(__file__), '../frontend/static'))
 app.config.from_object(Config)
@@ -27,7 +28,7 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
-    posts = Post.query.order_by(Post.boosted_at.desc().nullslast(), Post.created_at.desc()).limit(7).all()
+    posts = Post.query.order_by(Post.created_at.desc()).limit(7).all()
     categories = Category.query.all()
     return render_template('index.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories)
 
@@ -38,7 +39,7 @@ def topics():
     query = Post.query
     if category_id:
         query = query.filter_by(category_id=category_id)
-    posts = query.order_by(Post.boosted_at.desc().nullslast(), Post.created_at.desc()).all()
+    posts = query.order_by(Post.created_at.desc()).all()
     return render_template('konular.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories, selected_category=category_id)
 
 @app.route('/uyeler')
@@ -51,7 +52,26 @@ def members():
 @login_required
 def profile():
     categories = Category.query.all()
-    return render_template('profil.html', user=current_user, categories=categories)
+    # Kullanıcının açtığı tartışmalar
+    user_posts = Post.query.filter_by(user_id=current_user.id).all()
+    # Kullanıcının yaptığı yorumlar
+    user_comments = Comment.query.filter_by(user_id=current_user.id).all()
+    # Her tartışmanın beğeni sayısı
+    post_likes = {post.id: len(post.likes) for post in user_posts}
+    # Bu hafta en çok beğeni alan kendi tartışması
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    weekly_posts = (
+        Post.query
+        .filter(Post.user_id == current_user.id)
+        .join(Post.likes)
+        .filter(Like.created_at >= week_ago)
+        .group_by(Post.id)
+        .with_entities(Post, func.count(Like.id).label('like_count'))
+        .order_by(func.count(Like.id).desc())
+        .all()
+    )
+    top_weekly_post = weekly_posts[0] if weekly_posts else None
+    return render_template('profil.html', user=current_user, categories=categories, user_posts=user_posts, user_comments=user_comments, post_likes=post_likes, top_weekly_post=top_weekly_post)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -136,13 +156,20 @@ def post_detail(post_id):
             return redirect(url_for('post_detail', post_id=post.id))
     return render_template('konu.html', post=post, user=current_user)
 
-@app.route('/konu/boost/<int:post_id>', methods=['POST'])
+@app.route('/begen/<int:post_id>', methods=['POST'])
 @login_required
-def boost_post(post_id):
+def like_post(post_id):
     post = Post.query.get_or_404(post_id)
-    post.boosted_at = datetime.utcnow()
-    db.session.commit()
-    flash('Konu üste çıkarıldı.', 'success')
+    existing_like = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
+    if existing_like:
+        db.session.delete(existing_like)
+        db.session.commit()
+        flash('Beğeni geri alındı.', 'success')
+    else:
+        like = Like(user_id=current_user.id, post_id=post_id)
+        db.session.add(like)
+        db.session.commit()
+        flash('Tartışma beğenildi.', 'success')
     return redirect(request.referrer or url_for('topics'))
 
 # Blueprintler ve route'lar daha sonra eklenecek

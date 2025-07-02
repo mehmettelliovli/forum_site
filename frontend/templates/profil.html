@@ -18,12 +18,51 @@
     </nav>
 
     <section class="topics-section">
-      <h2>profilim</h2>
+      <h2>Profilim</h2>
       <ul>
-        <li>Kullanıcı adı: {{ user.username }}</li>
-        <li>E-posta: {{ user.email }}</li>
-        <li>Kayıt ID: {{ user.id }}</li>
+        <li><b>Kullanıcı adı:</b> {{ user.username }}</li>
+        <li><b>E-posta:</b> {{ user.email }}</li>
+        <li><b>Kayıt ID:</b> {{ user.id }}</li>
       </ul>
+      <hr>
+      <h3>Açtığım Tartışmalar</h3>
+      {% if user_posts %}
+        <ul>
+        {% for post in user_posts %}
+          <li>
+            <b>{{ post.title }}</b> ({{ post.created_at.strftime('%d.%m.%Y') }})<br>
+            <span style="font-size:13px;">Kategori: {{ post.category.name }} | Beğeni: {{ post_likes[post.id] }}</span>
+          </li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p>Henüz tartışma açmadınız.</p>
+      {% endif %}
+      <hr>
+      <h3>Yaptığım Yorumlar</h3>
+      {% if user_comments %}
+        <ul>
+        {% for comment in user_comments %}
+          <li>
+            <b>{{ comment.post.title }}</b> başlıklı tartışmada ({{ comment.created_at.strftime('%d.%m.%Y') }}):<br>
+            <span style="font-size:13px;">{{ comment.content }}</span>
+          </li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p>Henüz yorum yapmadınız.</p>
+      {% endif %}
+      <hr>
+      <h3>Bu Hafta En Çok Beğeni Alan Tartışmam</h3>
+      {% if top_weekly_post %}
+        <div class="topic">
+          <div class="topic-title">{{ top_weekly_post[0].title }}</div>
+          <div class="meta-info">Beğeni: {{ top_weekly_post[1] }} | Tarih: {{ top_weekly_post[0].created_at.strftime('%d.%m.%Y') }}</div>
+          <div class="topic-content">{{ top_weekly_post[0].content }}</div>
+        </div>
+      {% else %}
+        <p>Bu hafta en çok beğeni alan bir tartışmanız yok.</p>
+      {% endif %}
     </section>
 
     {% if user.is_authenticated %}

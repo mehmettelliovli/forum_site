@@ -25,14 +25,16 @@
       <div class="meta-info">
         <b>Kategori:</b> {{ post.category.name }}<br>
         <b>Yazar:</b> {{ post.author.username }}<br>
-        <b>Tarih:</b> {{ post.created_at.strftime('%d.%m.%Y %H:%M') }}
+        <b>Tarih:</b> {{ post.created_at.strftime('%d.%m.%Y %H:%M') }}<br>
+        <b>Beğeni:</b> {{ post.likes|length }}
+        {% if user.is_authenticated %}
+          <form action="{{ url_for('like_post', post_id=post.id) }}" method="post" style="display:inline;">
+            {% set liked = post.likes|selectattr('user_id', 'equalto', user.id)|list|length > 0 %}
+            <button type="submit">{% if liked %}Beğeniyi Geri Al{% else %}Beğen{% endif %}</button>
+          </form>
+        {% endif %}
       </div>
       <div class="topic-content">{{ post.content }}</div>
-      {% if user.is_authenticated %}
-        <form action="{{ url_for('boost_post', post_id=post.id) }}" method="post" style="display:inline;">
-          <button type="submit">Üste Çıkar</button>
-        </form>
-      {% endif %}
       <hr>
       <h3>Yorumlar</h3>
       {% for comment in post.comments %}
