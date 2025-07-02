@@ -10,6 +10,15 @@
 <body>
 
     <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              {% if category == 'login_success' %}
+                <div class="flash success" style="margin-bottom:18px;">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
         <header>tellioglu forum</header>
         <hr>
         <nav>
@@ -42,7 +51,7 @@
             {% endfor %}
         </section>
         {% if user.is_authenticated %}
-          <div class="fab" id="fabBtn">+ Tartışma Oluştur</div>
+          <div class="fab" id="fabBtn">Tartışma Oluştur</div>
           <div class="modal-bg" id="modalBg" style="display:none;">
             <div class="modal">
               <span class="modal-close" id="modalClose">&times;</span>

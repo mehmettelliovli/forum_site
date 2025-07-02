@@ -101,7 +101,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and bcrypt.check_password_hash(user.password_hash, password):
             login_user(user)
-            flash('Giriş başarılı', 'success')
+            flash('Giriş başarılı', 'login_success')
             return redirect(url_for('home'))
         else:
             flash('Kullanıcı adı veya parola hatalı', 'danger')
@@ -175,8 +175,8 @@ def like_post(post_id):
 # Blueprintler ve route'lar daha sonra eklenecek
 
 if __name__ == '__main__':
-    print('DB URI:', app.config['SQLALCHEMY_DATABASE_URI'])
-    with app.app_context():
-        db.create_all()
-        create_default_categories()
+#    print('DB URI:', app.config['SQLALCHEMY_DATABASE_URI'])
+#    with app.app_context():
+#        db.create_all()
+#        create_default_categories()
     app.run(debug=True) 

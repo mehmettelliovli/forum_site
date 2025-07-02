@@ -7,7 +7,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f7fa;
+    background-color: #313438;
     color: #2f2f2f;
     padding: 40px 20px;
 }
@@ -101,19 +101,22 @@ hr {
     position: fixed;
     right: 32px;
     bottom: 32px;
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     background: #2e7d32;
     color: #fff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
+    font-size: 20px;
     box-shadow: 0 4px 16px rgba(46,125,50,0.2);
     cursor: pointer;
     z-index: 1000;
     transition: background 0.2s;
+    padding: 0 10px;
+    text-align: center;
+    line-height: 1.2;
 }
 .fab:hover {
     background: #388e3c;
