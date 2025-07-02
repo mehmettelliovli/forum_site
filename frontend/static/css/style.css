@@ -95,3 +95,142 @@ hr {
     border-top: 1px solid #ddd;
     margin: 12px 0;
 }
+
+/* Sağ alt sabit buton */
+.fab {
+    position: fixed;
+    right: 32px;
+    bottom: 32px;
+    width: 60px;
+    height: 60px;
+    background: #2e7d32;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    box-shadow: 0 4px 16px rgba(46,125,50,0.2);
+    cursor: pointer;
+    z-index: 1000;
+    transition: background 0.2s;
+}
+.fab:hover {
+    background: #388e3c;
+}
+
+/* Modal */
+.modal-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+.modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 28px;
+    min-width: 340px;
+    max-width: 95vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    position: relative;
+    animation: modalIn 0.2s;
+}
+@keyframes modalIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.modal-close {
+    position: absolute;
+    top: 12px; right: 16px;
+    font-size: 24px;
+    color: #888;
+    cursor: pointer;
+}
+.modal-close:hover { color: #2e7d32; }
+
+/* Modern form */
+.form-group {
+    margin-bottom: 18px;
+}
+input[type="text"], input[type="email"], input[type="password"], textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #bdbdbd;
+    border-radius: 7px;
+    font-size: 16px;
+    margin-top: 6px;
+    background: #f9f9f9;
+    transition: border 0.2s;
+}
+input:focus, textarea:focus, select:focus {
+    border: 1.5px solid #2e7d32;
+    outline: none;
+}
+button, .button {
+    background: #2e7d32;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 22px;
+    font-size: 17px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+    display: inline-block;
+}
+button:hover, .button:hover {
+    background: #388e3c;
+}
+
+/* Modern kart ve gölge */
+.card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    padding: 32px 28px;
+    margin: 32px auto;
+    max-width: 400px;
+}
+
+/* Flash mesajlar */
+.flash {
+    padding: 10px 18px;
+    border-radius: 7px;
+    margin-bottom: 14px;
+    font-size: 16px;
+}
+.flash.success { background: #c8e6c9; color: #256029; }
+.flash.danger { background: #ffcdd2; color: #b71c1c; }
+
+/* Konu kartı hover */
+.topic {
+    background: #f8f8f8;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(46,125,50,0.04);
+    transition: box-shadow 0.2s, background 0.2s;
+    padding: 16px 18px;
+}
+.topic:hover {
+    background: #e8f5e9;
+    box-shadow: 0 4px 18px rgba(46,125,50,0.10);
+}
+
+/* Kategori filtre modern */
+select#category {
+    max-width: 220px;
+    margin-right: 12px;
+    background: #e8f5e9;
+    border: 1.5px solid #a5d6a7;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .container { padding: 0; }
+    .topics-section { padding: 12px; }
+    .card { padding: 16px 8px; }
+}

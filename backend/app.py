@@ -3,6 +3,8 @@ from config import Config
 from extensions import db, bcrypt, login_manager
 from flask_login import login_user, logout_user, login_required, current_user
 import os
+from models import User, Post, Category, Comment, create_default_categories
+from datetime import datetime
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), '../frontend/templates'), static_folder=os.path.join(os.path.dirname(__file__), '../frontend/static'))
 app.config.from_object(Config)
@@ -14,7 +16,6 @@ login_manager.init_app(app)
 from auth import bp as auth_bp
 from users import bp as users_bp
 from forum import bp as forum_bp
-from models import User, Post, Category, create_default_categories
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(users_bp)
@@ -26,23 +27,31 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
-    posts = Post.query.order_by(Post.created_at.desc()).limit(7).all()
-    return render_template('index.html', posts=posts, user=current_user if current_user.is_authenticated else None)
+    posts = Post.query.order_by(Post.boosted_at.desc().nullslast(), Post.created_at.desc()).limit(7).all()
+    categories = Category.query.all()
+    return render_template('index.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories)
 
-@app.route('/konular')
+@app.route('/tartismalar')
 def topics():
-    posts = Post.query.order_by(Post.created_at.desc()).all()
-    return render_template('konular.html', posts=posts, user=current_user if current_user.is_authenticated else None)
+    category_id = request.args.get('category_id', type=int)
+    categories = Category.query.all()
+    query = Post.query
+    if category_id:
+        query = query.filter_by(category_id=category_id)
+    posts = query.order_by(Post.boosted_at.desc().nullslast(), Post.created_at.desc()).all()
+    return render_template('konular.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories, selected_category=category_id)
 
 @app.route('/uyeler')
 def members():
     users = User.query.all()
-    return render_template('uyeler.html', users=users, user=current_user if current_user.is_authenticated else None)
+    categories = Category.query.all()
+    return render_template('uyeler.html', users=users, user=current_user if current_user.is_authenticated else None, categories=categories)
 
 @app.route('/profil')
 @login_required
 def profile():
-    return render_template('profil.html', user=current_user)
+    categories = Category.query.all()
+    return render_template('profil.html', user=current_user, categories=categories)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -86,9 +95,60 @@ def logout():
     flash('Çıkış yapıldı', 'success')
     return redirect(url_for('home'))
 
+@app.route('/tartisma/olustur', methods=['GET', 'POST'])
+@login_required
+def create_tartisma():
+    categories = Category.query.all()
+    title = request.form.get('title')
+    content = request.form.get('content')
+    category_id = request.form.get('category_id')
+    print('DEBUG tartisma form:', title, content, category_id)
+    try:
+        category_id = int(category_id)
+    except (TypeError, ValueError):
+        flash('Kategori seçimi hatalı.', 'danger')
+        return redirect(url_for('topics'))
+    if not title or not content or not category_id:
+        flash('Tüm alanlar zorunlu.', 'danger')
+        return redirect(url_for('topics'))
+    try:
+        post = Post(title=title, content=content, category_id=category_id, user_id=current_user.id)
+        db.session.add(post)
+        db.session.commit()
+        print('DEBUG: Tartışma başarıyla kaydedildi')
+        flash('Tartışma başarıyla oluşturuldu.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        print('DEBUG: Exception:', e)
+        flash('Bir hata oluştu, lütfen tekrar deneyin.', 'danger')
+    return redirect(url_for('topics'))
+
+@app.route('/konu/<int:post_id>', methods=['GET', 'POST'])
+def post_detail(post_id):
+    post = Post.query.get_or_404(post_id)
+    if request.method == 'POST' and current_user.is_authenticated:
+        content = request.form.get('comment_content')
+        if content:
+            comment = Comment(content=content, user_id=current_user.id, post_id=post.id)
+            db.session.add(comment)
+            db.session.commit()
+            flash('Yorum eklendi.', 'success')
+            return redirect(url_for('post_detail', post_id=post.id))
+    return render_template('konu.html', post=post, user=current_user)
+
+@app.route('/konu/boost/<int:post_id>', methods=['POST'])
+@login_required
+def boost_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    post.boosted_at = datetime.utcnow()
+    db.session.commit()
+    flash('Konu üste çıkarıldı.', 'success')
+    return redirect(request.referrer or url_for('topics'))
+
 # Blueprintler ve route'lar daha sonra eklenecek
 
 if __name__ == '__main__':
+    print('DB URI:', app.config['SQLALCHEMY_DATABASE_URI'])
     with app.app_context():
         db.create_all()
         create_default_categories()

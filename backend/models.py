@@ -19,8 +19,18 @@ class Post(db.Model):
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    boosted_at = db.Column(db.DateTime, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    comments = db.relationship('Comment', backref='post', lazy=True)
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    user = db.relationship('User')
 
 def create_default_categories():
     if not Category.query.first():
@@ -28,5 +38,7 @@ def create_default_categories():
             Category(name='Programlama'),
             Category(name='Teknoloji'),
             Category(name='Genel'),
+            Category(name='Sağlık'),
+            Category(name='Gündem'),
         ])
         db.session.commit() 
