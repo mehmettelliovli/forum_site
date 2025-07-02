@@ -11,7 +11,7 @@
 
     <nav>
       <a href="{{ url_for('home') }}">anasayfa</a>
-      <a href="{{ url_for('topics') }}">konular</a>
+      <a href="{{ url_for('topics') }}">tartismalar</a>
       <a href="{{ url_for('members') }}">uyeler</a>
       {% if user.is_authenticated %}
         <a href="{{ url_for('profile') }}">profil</a>
@@ -32,6 +32,44 @@
         {% endfor %}
       </ul>
     </section>
+
+    {% if user.is_authenticated %}
+      <div class="fab" id="fabBtn">Tartışma Oluştur</div>
+      <div class="modal-bg" id="modalBg" style="display:none;">
+        <div class="modal">
+          <span class="modal-close" id="modalClose">&times;</span>
+          <h2>Yeni Tartışma Oluştur</h2>
+          <form id="modalForm" action="{{ url_for('create_tartisma') }}" method="post">
+            <div class="form-group">
+              <label for="title">Başlık:</label>
+              <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+              <label for="content">İçerik:</label>
+              <textarea id="content" name="content" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="category">Kategori:</label>
+              <select id="category" name="category_id" required>
+                <option value="">Kategori seçiniz</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit">Tartışma Oluştur</button>
+          </form>
+        </div>
+      </div>
+      <script>
+        const fab = document.getElementById('fabBtn');
+        const modalBg = document.getElementById('modalBg');
+        const modalClose = document.getElementById('modalClose');
+        fab.onclick = () => { modalBg.style.display = 'flex'; };
+        modalClose.onclick = () => { modalBg.style.display = 'none'; };
+        window.onclick = (e) => { if(e.target === modalBg) modalBg.style.display = 'none'; };
+      </script>
+    {% endif %}
   </div>
 </body>
 </html>
