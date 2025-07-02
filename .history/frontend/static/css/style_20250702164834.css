@@ -74,8 +74,8 @@ nav a:hover {
 .topic-title {
     font-size: 22px;
     color: #1a2a3a;
-    font-weight: 400;
-    background: #f6ffce;
+    font-weight: 600;
+    background: #f3f6fa;
     padding: 10px 18px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(30,40,60,0.06);
