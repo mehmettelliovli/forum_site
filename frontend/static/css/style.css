@@ -93,14 +93,12 @@ nav a:hover {
     box-shadow: 0 4px 16px rgba(0,150,136,0.10);
     text-decoration: none;
 }
-
 /* Meta bilgi */
 .meta-info {
     font-size: 13px;
     color: #666;
     margin-top: 6px;
 }
-
 /* Ayırıcı çizgi */
 hr {
     border: none;
