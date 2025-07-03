@@ -22,7 +22,6 @@
       <ul>
         <li><b>Kullanıcı adı:</b> {{ user.username }}</li>
         <li><b>E-posta:</b> {{ user.email }}</li>
-        <li><b>Kayıt ID:</b> {{ user.id }}</li>
         {% if user.role == 1 %}
           <li><span style="color: red; font-weight: bold;">[admin]</span></li>
         {% endif %}

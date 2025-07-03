@@ -50,9 +50,11 @@ def topics():
 
 @app.route('/uyeler')
 def members():
-    users = User.query.all()
+    page = request.args.get('page', 1, type=int)
+    pagination = User.query.order_by(User.id.asc()).paginate(page=page, per_page=25, error_out=False)
+    users = pagination.items
     categories = Category.query.all()
-    return render_template('uyeler.html', users=users, user=current_user if current_user.is_authenticated else None, categories=categories)
+    return render_template('uyeler.html', users=users, user=current_user if current_user.is_authenticated else None, categories=categories, pagination=pagination)
 
 @app.route('/profil')
 @login_required
