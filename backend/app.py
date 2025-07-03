@@ -28,19 +28,25 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
-    posts = Post.query.order_by(Post.created_at.desc()).limit(7).all()
+    page = request.args.get('page', 1, type=int)
+    pagination = Post.query.order_by(Post.created_at.desc()).paginate(page=page, per_page=10, error_out=False)
+    posts = pagination.items
     categories = Category.query.all()
-    return render_template('index.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories)
+    return render_template('index.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories, pagination=pagination)
 
 @app.route('/tartismalar')
 def topics():
+    page = request.args.get('page', 1, type=int)
     category_id = request.args.get('category_id', type=int)
     categories = Category.query.all()
     query = Post.query
     if category_id:
         query = query.filter_by(category_id=category_id)
-    posts = query.order_by(Post.created_at.desc()).all()
-    return render_template('konular.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories, selected_category=category_id)
+    
+    pagination = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=10, error_out=False)
+    posts = pagination.items
+
+    return render_template('konular.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories, selected_category=category_id, pagination=pagination)
 
 @app.route('/uyeler')
 def members():
