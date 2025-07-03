@@ -25,16 +25,11 @@
 
     <section class="topics-section">
       <h2>tüm tartışmalar</h2>
-      <div style="margin-bottom: 1em;">
-        <form method="get" action="">
-          <label for="category">Kategori:</label>
-          <select name="category_id" id="category" onchange="this.form.submit()">
-            <option value="">Tümü</option>
-            {% for cat in categories %}
-              <option value="{{ cat.id }}" {% if selected_category and selected_category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
-            {% endfor %}
-          </select>
-        </form>
+      <div class="category-buttons" style="margin-bottom: 1em; text-align: center;">
+        <a href="{{ url_for('topics') }}" class="btn {% if not selected_category %}active{% endif %}">Tümü</a>
+        {% for cat in categories %}
+          <a href="{{ url_for('topics', category_id=cat.id) }}" class="btn {% if selected_category == cat.id %}active{% endif %}">{{ cat.name }}</a>
+        {% endfor %}
       </div>
       {% for post in posts %}
         <div class="topic">
@@ -93,5 +88,21 @@
       window.onclick = (e) => { if(e.target === modalBg) modalBg.style.display = 'none'; };
     </script>
   {% endif %}
+  <style>
+    .category-buttons .btn {
+      margin: 5px;
+      background-color: #f0f0f0;
+      border: 1px solid #ddd;
+      color: #333;
+      padding: 8px 16px;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    .category-buttons .btn.active {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+  </style>
 </body>
 </html>

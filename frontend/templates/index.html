@@ -86,6 +86,27 @@
             modalClose.onclick = () => { modalBg.style.display = 'none'; };
             window.onclick = (e) => { if(e.target === modalBg) modalBg.style.display = 'none'; };
           </script>
+        {% else %}
+          <div class="fab" id="fabBtn">Tartışma Oluştur</div>
+          <div class="modal-bg" id="loginModalBg" style="display:none;">
+            <div class="modal">
+              <span class="modal-close" id="loginModalClose">&times;</span>
+              <h2 style="text-align:center;">Tartışma oluşturmak için giriş yapmalısın</h2>
+              <button id="loginRedirectBtn" class="btn" style="display:block; margin: 32px auto 0 auto; font-size:18px; min-width:160px;">Giriş Yap</button>
+            </div>
+          </div>
+          <script>
+            const fab = document.getElementById('fabBtn');
+            const loginModalBg = document.getElementById('loginModalBg');
+            const loginModalClose = document.getElementById('loginModalClose');
+            const loginRedirectBtn = document.getElementById('loginRedirectBtn');
+            fab.onclick = () => { loginModalBg.style.display = 'flex'; };
+            loginModalClose.onclick = () => { loginModalBg.style.display = 'none'; };
+            window.onclick = (e) => { if(e.target === loginModalBg) loginModalBg.style.display = 'none'; };
+            if (loginRedirectBtn) {
+              loginRedirectBtn.onclick = () => { window.location.href = "{{ url_for('login') }}"; };
+            }
+          </script>
         {% endif %}
     </div>
 
