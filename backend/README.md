@@ -28,6 +28,8 @@ python app.py
 
 ### Kullanıcılar
 - GET `/users/` — Tüm kullanıcıları listele
+- DELETE `/users/<user_id>` — Kullanıcı sil (admin herkes, user sadece kendini)
+- PUT `/users/<user_id>` — Kullanıcı güncelle (admin herkes, user sadece kendini)
 
 ### Forum
 - GET `/forum/posts` — Tüm konuları listele
@@ -36,4 +38,5 @@ python app.py
 ## Notlar
 - Tüm POST isteklerinde `Content-Type: application/json` header'ı olmalı.
 - Kimlik doğrulama cookie (session) bazlıdır.
-- Hatalar uygun HTTP kodları ile döner. 
+- Hatalar uygun HTTP kodları ile döner.
+- Kullanıcı tablosunda `role` alanı vardır: 0=user, 1=admin. Admin tüm kullanıcıları silebilir/güncelleyebilir, user sadece kendini silebilir/güncelleyebilir. 
