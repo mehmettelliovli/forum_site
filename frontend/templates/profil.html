@@ -4,6 +4,24 @@
   <meta charset="UTF-8">
   <title>Profil – Tellioglu Forum</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .topic-link {
+      display: inline-block;
+      background: #28a745;
+      color: #fff !important;
+      padding: 4px 14px;
+      border-radius: 16px;
+      font-weight: 500;
+      text-decoration: none;
+      margin-bottom: 2px;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .topic-link:hover {
+      background: #218838;
+      box-shadow: 0 2px 8px rgba(40,167,69,0.15);
+      color: #fff !important;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -22,15 +40,22 @@
       <ul>
         <li><b>Kullanıcı adı:</b> {{ user.username }}</li>
         <li><b>E-posta:</b> {{ user.email }}</li>
-        <li><b>Kayıt ID:</b> {{ user.id }}</li>
+        {% if user.role == 1 %}
+          <li><span style="color: red; font-weight: bold;">[admin]</span></li>
+        {% endif %}
       </ul>
+      <form action="/users/{{ user.id }}" method="post" style="display:inline;" onsubmit="return confirm('Profilinizi silmek istediğinize emin misiniz?');">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit">Hesabımı Sil</button>
+      </form>
+      <button class="btn" onclick="window.location.href='/users/{{ user.id }}/edit'" style="margin-left: 8px;">Bilgilerimi Güncelle</button>
       <hr>
       <h3>Açtığım Tartışmalar</h3>
       {% if user_posts %}
         <ul>
         {% for post in user_posts %}
           <li>
-            <b>{{ post.title }}</b> ({{ post.created_at.strftime('%d.%m.%Y') }})<br>
+            <b><a href="{{ url_for('post_detail', post_id=post.id) }}" class="topic-link">{{ post.title }}</a></b> ({{ post.created_at.strftime('%d.%m.%Y') }})<br>
             <span style="font-size:13px;">Kategori: {{ post.category.name }} | Beğeni: {{ post_likes[post.id] }}</span>
           </li>
         {% endfor %}
@@ -44,7 +69,7 @@
         <ul>
         {% for comment in user_comments %}
           <li>
-            <b>{{ comment.post.title }}</b> başlıklı tartışmada ({{ comment.created_at.strftime('%d.%m.%Y') }}):<br>
+            <b><a href="{{ url_for('post_detail', post_id=comment.post.id) }}" class="topic-link">{{ comment.post.title }}</a></b> başlıklı tartışmada ({{ comment.created_at.strftime('%d.%m.%Y') }}):<br>
             <span style="font-size:13px;">{{ comment.content }}</span>
           </li>
         {% endfor %}
@@ -56,7 +81,9 @@
       <h3>Bu Hafta En Çok Beğeni Alan Tartışmam</h3>
       {% if top_weekly_post %}
         <div class="topic">
-          <div class="topic-title">{{ top_weekly_post[0].title }}</div>
+          <div class="topic-title">
+            <a href="{{ url_for('post_detail', post_id=top_weekly_post[0].id) }}" class="topic-link">{{ top_weekly_post[0].title }}</a>
+          </div>
           <div class="meta-info">Beğeni: {{ top_weekly_post[1] }} | Tarih: {{ top_weekly_post[0].created_at.strftime('%d.%m.%Y') }}</div>
           <div class="topic-content">{{ top_weekly_post[0].content }}</div>
         </div>

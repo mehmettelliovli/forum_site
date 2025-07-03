@@ -7,6 +7,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    role = db.Column(db.Integer, default=0, nullable=False)  # 0=user, 1=admin
     posts = db.relationship('Post', backref='author', lazy=True)
     likes = db.relationship('Like', backref='user', lazy=True)
 

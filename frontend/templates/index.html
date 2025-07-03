@@ -49,6 +49,25 @@
             </div>
             <hr>
             {% endfor %}
+            <div class="pagination" style="text-align: center; margin-top: 20px;">
+              {% if pagination.has_prev %}
+                <a href="{{ url_for('home', page=pagination.prev_num) }}" class="btn">&laquo; Önceki</a>
+              {% endif %}
+              {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                  {% if pagination.page == page_num %}
+                    <a href="{{ url_for('home', page=page_num) }}" class="btn active">{{ page_num }}</a>
+                  {% else %}
+                    <a href="{{ url_for('home', page=page_num) }}" class="btn">{{ page_num }}</a>
+                  {% endif %}
+                {% else %}
+                  ...
+                {% endif %}
+              {% endfor %}
+              {% if pagination.has_next %}
+                <a href="{{ url_for('home', page=pagination.next_num) }}" class="btn">Sonraki &raquo;</a>
+              {% endif %}
+            </div>
         </section>
         {% if user.is_authenticated %}
           <div class="fab" id="fabBtn">Tartışma Oluştur</div>
@@ -86,8 +105,58 @@
             modalClose.onclick = () => { modalBg.style.display = 'none'; };
             window.onclick = (e) => { if(e.target === modalBg) modalBg.style.display = 'none'; };
           </script>
+        {% else %}
+          <div class="fab" id="fabBtn">Tartışma Oluştur</div>
+          <div class="modal-bg" id="loginModalBg" style="display:none;">
+            <div class="modal">
+              <span class="modal-close" id="loginModalClose">&times;</span>
+              <h2 style="text-align:center;">Tartışma oluşturmak için giriş yapmalısın</h2>
+              <button id="loginRedirectBtn" class="btn" style="display:block; margin: 32px auto 0 auto; font-size:18px; min-width:160px;">Giriş Yap</button>
+            </div>
+          </div>
+          <script>
+            const fab = document.getElementById('fabBtn');
+            const loginModalBg = document.getElementById('loginModalBg');
+            const loginModalClose = document.getElementById('loginModalClose');
+            const loginRedirectBtn = document.getElementById('loginRedirectBtn');
+            fab.onclick = () => { loginModalBg.style.display = 'flex'; };
+            loginModalClose.onclick = () => { loginModalBg.style.display = 'none'; };
+            window.onclick = (e) => { if(e.target === loginModalBg) loginModalBg.style.display = 'none'; };
+            if (loginRedirectBtn) {
+              loginRedirectBtn.onclick = () => { window.location.href = "{{ url_for('login') }}"; };
+            }
+          </script>
         {% endif %}
     </div>
+
+    <style>
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .pagination .btn {
+      margin: 0 5px;
+      background-color: #28a745;
+      color: white;
+      border: 1px solid #218838;
+      border-radius: 20px;
+      padding: 8px 16px;
+      transition: all 0.2s ease-in-out;
+      text-decoration: none;
+    }
+    .pagination .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      background-color: #218838;
+    }
+    .pagination .btn.active {
+      background-color: #1e7e34;
+      border-color: #1c7430;
+      box-shadow: none;
+      transform: none;
+    }
+    </style>
 
 </body>
 
