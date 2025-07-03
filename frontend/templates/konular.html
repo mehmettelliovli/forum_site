@@ -1,155 +1,95 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <title>Konular – Tellioglu Forum</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-  <div class="container">
-    <header>tellioglu forum</header>
-
-    <nav>
-      <a href="{{ url_for('home') }}">anasayfa</a>
-      <a href="{{ url_for('topics') }}">tartismalar</a>
-      <a href="{{ url_for('members') }}">uyeler</a>
-      {% if user.is_authenticated %}
-        <a href="{{ url_for('profile') }}">profil</a>
-        <a href="{{ url_for('logout') }}">çıkış</a>
-        <button id="fabBtn" class="button" style="margin-left:12px;vertical-align:middle;">+ Tartışma Oluştur</button>
-      {% else %}
-        <a href="{{ url_for('signup') }}">üye ol</a>
-        <a href="{{ url_for('login') }}">giriş</a>
-      {% endif %}
-    </nav>
-
-    <section class="topics-section">
-      <h2>tüm tartışmalar</h2>
-      <div class="category-buttons" style="margin-bottom: 1em; text-align: center;">
-        <a href="{{ url_for('topics') }}" class="btn {% if not selected_category %}active{% endif %}">Tümü</a>
-        {% for cat in categories %}
-          <a href="{{ url_for('topics', category_id=cat.id) }}" class="btn {% if selected_category == cat.id %}active{% endif %}">{{ cat.name }}</a>
-        {% endfor %}
-      </div>
-      {% for post in posts %}
-        <div class="topic">
-          <div class="topic-title"><a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a></div>
-          <div class="meta-info">
-            {{ post.author.username }} – {{ post.created_at.strftime('%d.%m.%Y') }} | {{ post.category.name }}
-            <span style="margin-left:16px;">Beğeni: {{ post.likes|length }}</span>
-            {% if user.is_authenticated %}
-              <form action="{{ url_for('like_post', post_id=post.id) }}" method="post" style="display:inline;">
-                {% set liked = post.likes|selectattr('user_id', 'equalto', user.id)|list|length > 0 %}
-                <button type="submit">{% if liked %}Beğeniyi Geri Al{% else %}Beğen{% endif %}</button>
-              </form>
-            {% endif %}
-          </div>
-          <div class="topic-content">{{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}</div>
-        </div>
-        <hr>
-      {% else %}
-        <p>Henüz tartışma yok.</p>
-      {% endfor %}
-    </section>
-
-    <div class="pagination" style="text-align: center; margin-top: 20px;">
-      {% if pagination.has_prev %}
-        <a href="{{ url_for('topics', page=pagination.prev_num, category_id=selected_category) }}" class="btn">&laquo; Önceki</a>
-      {% endif %}
-      {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-        {% if page_num %}
-          {% if pagination.page == page_num %}
-            <a href="{{ url_for('topics', page=page_num, category_id=selected_category) }}" class="btn active">{{ page_num }}</a>
-          {% else %}
-            <a href="{{ url_for('topics', page=page_num, category_id=selected_category) }}" class="btn">{{ page_num }}</a>
-          {% endif %}
-        {% else %}
-          ...
-        {% endif %}
-      {% endfor %}
-      {% if pagination.has_next %}
-        <a href="{{ url_for('topics', page=pagination.next_num, category_id=selected_category) }}" class="btn">Sonraki &raquo;</a>
-      {% endif %}
-    </div>
-
+{% extends "base.html" %}
+{% block title %}Tartışmalar – Tellioglu Forum{% endblock %}
+{% block content %}
+<section class="topics-section">
+  <h2>tüm tartışmalar</h2>
+  <div class="category-buttons" style="margin-bottom: 1em; text-align: center;">
+    <a href="{{ url_for('topics') }}" class="btn {% if not selected_category %}active{% endif %}">Tümü</a>
+    {% for cat in categories %}
+      <a href="{{ url_for('topics', category_id=cat.id) }}" class="btn {% if selected_category == cat.id %}active{% endif %}">{{ cat.name }}</a>
+    {% endfor %}
   </div>
-  {% if user.is_authenticated %}
-    <div class="modal-bg" id="modalBg" style="display:none;">
-      <div class="modal">
-        <span class="modal-close" id="modalClose">&times;</span>
-        <h2>Yeni Tartışma Oluştur</h2>
-        <form id="modalForm" action="{{ url_for('create_tartisma') }}" method="post">
-          <div class="form-group">
-            <label for="title">Başlık:</label>
-            <input type="text" id="title" name="title" required>
-          </div>
-          <div class="form-group">
-            <label for="content">İçerik:</label>
-            <textarea id="content" name="content" rows="5" required></textarea>
-          </div>
-          <div class="form-group">
-            <label for="category">Kategori:</label>
-            <select id="category" name="category_id" required>
-              <option value="">Kategori seçiniz</option>
-              {% for cat in categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <button type="submit">Tartışma Oluştur</button>
-        </form>
+  {% for post in posts %}
+    <div class="topic">
+      <div class="topic-title"><a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a></div>
+      <div class="meta-info">
+        {{ post.author.username }} – {{ post.created_at.strftime('%d.%m.%Y') }} | {{ post.category.name }}
+        <span style="margin-left:16px;">Beğeni: {{ post.likes|length }}</span>
+        {% if user.is_authenticated %}
+          <form action="{{ url_for('like_post', post_id=post.id) }}" method="post" style="display:inline;">
+            {% set liked = post.likes|selectattr('user_id', 'equalto', user.id)|list|length > 0 %}
+            <button type="submit">{% if liked %}Beğeniyi Geri Al{% else %}Beğen{% endif %}</button>
+          </form>
+        {% endif %}
       </div>
+      <div class="topic-content">{{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}</div>
     </div>
-    <script>
-      const fab = document.getElementById('fabBtn');
-      const modalBg = document.getElementById('modalBg');
-      const modalClose = document.getElementById('modalClose');
-      fab.onclick = () => { modalBg.style.display = 'flex'; };
-      modalClose.onclick = () => { modalBg.style.display = 'none'; };
-      window.onclick = (e) => { if(e.target === modalBg) modalBg.style.display = 'none'; };
-    </script>
-  {% endif %}
-  <style>
-    .category-buttons .btn {
-      margin: 5px;
-      background-color: #f0f0f0;
-      border: 1px solid #ddd;
-      color: #333;
-      padding: 8px 16px;
-      text-decoration: none;
-      border-radius: 4px;
-    }
-    .category-buttons .btn.active {
-      background-color: #007bff;
-      color: white;
-      border-color: #007bff;
-    }
-    .pagination {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    .pagination .btn {
-      margin: 0 5px;
-      background-color: #28a745; /* Koyu yeşil */
-      color: white;
-      border: 1px solid #218838;
-      border-radius: 20px;
-      padding: 8px 16px;
-      transition: all 0.2s ease-in-out;
-      text-decoration: none;
-    }
-    .pagination .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      background-color: #218838; /* Hover'da daha koyu yeşil */
-    }
-    .pagination .btn.active {
-      background-color: #1e7e34; /* Aktifken en koyu yeşil */
-      border-color: #1c7430;
-      box-shadow: none;
-      transform: none;
-    }
-  </style>
-</body>
-</html>
+    <hr>
+  {% else %}
+    <p>Henüz tartışma yok.</p>
+  {% endfor %}
+  <div class="pagination" style="text-align: center; margin-top: 20px;">
+    {% if pagination.has_prev %}
+      <a href="{{ url_for('topics', page=pagination.prev_num, category_id=selected_category) }}" class="btn">&laquo; Önceki</a>
+    {% endif %}
+    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if page_num %}
+        {% if pagination.page == page_num %}
+          <a href="{{ url_for('topics', page=page_num, category_id=selected_category) }}" class="btn active">{{ page_num }}</a>
+        {% else %}
+          <a href="{{ url_for('topics', page=page_num, category_id=selected_category) }}" class="btn">{{ page_num }}</a>
+        {% endif %}
+      {% else %}
+        ...
+      {% endif %}
+    {% endfor %}
+    {% if pagination.has_next %}
+      <a href="{{ url_for('topics', page=pagination.next_num, category_id=selected_category) }}" class="btn">Sonraki &raquo;</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+{% block extra_head %}
+<style>
+.category-buttons .btn {
+  margin: 5px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  color: #333;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.category-buttons .btn.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+.pagination .btn {
+  margin: 0 5px;
+  background-color: #28a745;
+  color: white;
+  border: 1px solid #218838;
+  border-radius: 20px;
+  padding: 8px 16px;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+}
+.pagination .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  background-color: #218838;
+}
+.pagination .btn.active {
+  background-color: #1e7e34;
+  border-color: #1c7430;
+  box-shadow: none;
+  transform: none;
+}
+</style>
+{% endblock %}
