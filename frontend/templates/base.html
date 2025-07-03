@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Tellioglu Forum{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body { margin:0; padding:0; font-family: 'Segoe UI', Arial, sans-serif; background: #313438; }
+    .navbar {
+      width: 100%;
+      background: #28a745;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 56px;
+      box-shadow: 0 2px 8px rgba(40,167,69,0.08);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+    .navbar-logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: #fff;
+      text-decoration: none;
+    }
+    .navbar-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .navbar-links a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 16px;
+      transition: background 0.18s;
+    }
+    .navbar-links a:hover, .navbar-links a.active {
+      background: #218838;
+    }
+    @media (max-width: 700px) {
+      .navbar { flex-direction: column; height: auto; padding: 8px 0; }
+      .navbar-links { flex-wrap: wrap; gap: 8px; justify-content: center; }
+      .navbar-logo { margin-bottom: 6px; }
+    }
+    .container { max-width: 900px; margin: 40px auto 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 16px rgba(0,0,0,0.04); padding: 24px; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <nav class="navbar">
+    <a href="{{ url_for('home') }}" class="navbar-logo">tellioglu forum</a>
+    <div class="navbar-links">
+      <a href="{{ url_for('home') }}" class="{% if request.endpoint == 'home' %}active{% endif %}">Ana Sayfa</a>
+      <a href="{{ url_for('topics') }}" class="{% if request.endpoint == 'topics' %}active{% endif %}">Tartışmalar</a>
+      <a href="{{ url_for('members') }}" class="{% if request.endpoint == 'members' %}active{% endif %}">Üyeler</a>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('profile') }}" class="{% if request.endpoint == 'profile' %}active{% endif %}">Profil</a>
+        <a href="{{ url_for('logout') }}">Çıkış</a>
+      {% else %}
+        <a href="{{ url_for('signup') }}" class="{% if request.endpoint == 'signup' %}active{% endif %}">Kayıt</a>
+        <a href="{{ url_for('login') }}" class="{% if request.endpoint == 'login' %}active{% endif %}">Giriş</a>
+      {% endif %}
+    </div>
+  </nav>
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html> 
