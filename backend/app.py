@@ -42,22 +42,32 @@ def topics():
     category_id = request.args.get('category_id', type=int)
     categories = Category.query.all()
     query = Post.query
-    usd_try = None
+    usd_try = eur_try = gbp_try = None
     if category_id:
         query = query.filter_by(category_id=category_id)
         if category_id == 1:
             try:
                 api_key = app.config.get('EXCHANGE_API_KEY') or getattr(Config, 'EXCHANGE_API_KEY', None)
-                url = f'https://v6.exchangerate-api.com/v6/{api_key}/latest/USD'
-                resp = requests.get(url, timeout=5)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    usd_try = data.get('conversion_rates', {}).get('TRY')
+                usd_url = f'https://v6.exchangerate-api.com/v6/{api_key}/latest/USD'
+                eur_url = f'https://v6.exchangerate-api.com/v6/{api_key}/latest/EUR'
+                gbp_url = f'https://v6.exchangerate-api.com/v6/{api_key}/latest/GBP'
+                usd_resp = requests.get(usd_url, timeout=5)
+                eur_resp = requests.get(eur_url, timeout=5)
+                gbp_resp = requests.get(gbp_url, timeout=5)
+                if usd_resp.status_code == 200:
+                    usd_data = usd_resp.json()
+                    usd_try = usd_data.get('conversion_rates', {}).get('TRY')
+                if eur_resp.status_code == 200:
+                    eur_data = eur_resp.json()
+                    eur_try = eur_data.get('conversion_rates', {}).get('TRY')
+                if gbp_resp.status_code == 200:
+                    gbp_data = gbp_resp.json()
+                    gbp_try = gbp_data.get('conversion_rates', {}).get('TRY')
             except Exception:
-                usd_try = None
+                usd_try = eur_try = gbp_try = None
     pagination = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=10, error_out=False)
     posts = pagination.items
-    return render_template('konular.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories, selected_category=category_id, pagination=pagination, usd_try=usd_try)
+    return render_template('konular.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories, selected_category=category_id, pagination=pagination, usd_try=usd_try, eur_try=eur_try, gbp_try=gbp_try)
 
 @app.route('/uyeler')
 def members():
