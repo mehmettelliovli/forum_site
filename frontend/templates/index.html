@@ -45,7 +45,7 @@
     <hr>
     {% for post in posts %}
     <div class="topic">
-        <div class="topic-title"><a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a></div>
+        <div class="topic-title"><a href="{{ url_for('post_detail', slug=post.slug) }}">{{ post.title }}</a></div>
         <div class="meta-info">
             {{ post.author.username }} – {{ post.created_at.strftime('%d.%m.%Y') }} | {{ post.category.name }}
             {% if user.is_authenticated %}

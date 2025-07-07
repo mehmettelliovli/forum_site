@@ -6,6 +6,8 @@ import os
 from models import User, Post, Category, Comment, create_default_categories, Like
 from datetime import datetime, timedelta
 from sqlalchemy import func
+import requests
+import re
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), '../frontend/templates'), static_folder=os.path.join(os.path.dirname(__file__), '../frontend/static'))
 app.config.from_object(Config)
@@ -40,13 +42,32 @@ def topics():
     category_id = request.args.get('category_id', type=int)
     categories = Category.query.all()
     query = Post.query
+    usd_try = eur_try = gbp_try = None
     if category_id:
         query = query.filter_by(category_id=category_id)
-    
+        if category_id == 1:
+            try:
+                api_key = app.config.get('EXCHANGE_API_KEY') or getattr(Config, 'EXCHANGE_API_KEY', None)
+                usd_url = f'https://v6.exchangerate-api.com/v6/{api_key}/latest/USD'
+                eur_url = f'https://v6.exchangerate-api.com/v6/{api_key}/latest/EUR'
+                gbp_url = f'https://v6.exchangerate-api.com/v6/{api_key}/latest/GBP'
+                usd_resp = requests.get(usd_url, timeout=5)
+                eur_resp = requests.get(eur_url, timeout=5)
+                gbp_resp = requests.get(gbp_url, timeout=5)
+                if usd_resp.status_code == 200:
+                    usd_data = usd_resp.json()
+                    usd_try = usd_data.get('conversion_rates', {}).get('TRY')
+                if eur_resp.status_code == 200:
+                    eur_data = eur_resp.json()
+                    eur_try = eur_data.get('conversion_rates', {}).get('TRY')
+                if gbp_resp.status_code == 200:
+                    gbp_data = gbp_resp.json()
+                    gbp_try = gbp_data.get('conversion_rates', {}).get('TRY')
+            except Exception:
+                usd_try = eur_try = gbp_try = None
     pagination = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=10, error_out=False)
     posts = pagination.items
-
-    return render_template('konular.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories, selected_category=category_id, pagination=pagination)
+    return render_template('konular.html', posts=posts, user=current_user if current_user.is_authenticated else None, categories=categories, selected_category=category_id, pagination=pagination, usd_try=usd_try, eur_try=eur_try, gbp_try=gbp_try)
 
 @app.route('/uyeler')
 def members():
@@ -140,7 +161,17 @@ def create_tartisma():
         flash('Tüm alanlar zorunlu.', 'danger')
         return redirect(url_for('topics'))
     try:
-        post = Post(title=title, content=content, category_id=category_id, user_id=current_user.id)
+        def slugify(text):
+            text = re.sub(r'[^\w\s-]', '', text).strip().lower()
+            text = re.sub(r'[-\s]+', '-', text)
+            return text
+        base_slug = slugify(title)
+        slug = base_slug
+        i = 1
+        while Post.query.filter_by(slug=slug).first():
+            slug = f"{base_slug}-{i}"
+            i += 1
+        post = Post(title=title, slug=slug, content=content, category_id=category_id, user_id=current_user.id)
         db.session.add(post)
         db.session.commit()
         print('DEBUG: Tartışma başarıyla kaydedildi')
@@ -151,9 +182,9 @@ def create_tartisma():
         flash('Bir hata oluştu, lütfen tekrar deneyin.', 'danger')
     return redirect(url_for('topics'))
 
-@app.route('/konu/<int:post_id>', methods=['GET', 'POST'])
-def post_detail(post_id):
-    post = Post.query.get_or_404(post_id)
+@app.route('/konu/<slug>', methods=['GET', 'POST'])
+def post_detail(slug):
+    post = Post.query.filter_by(slug=slug).first_or_404()
     if request.method == 'POST' and current_user.is_authenticated:
         content = request.form.get('comment_content')
         if content:
@@ -161,7 +192,7 @@ def post_detail(post_id):
             db.session.add(comment)
             db.session.commit()
             flash('Yorum eklendi.', 'success')
-            return redirect(url_for('post_detail', post_id=post.id))
+            return redirect(url_for('post_detail', slug=post.slug))
     return render_template('konu.html', post=post, user=current_user)
 
 @app.route('/begen/<int:post_id>', methods=['POST'])
